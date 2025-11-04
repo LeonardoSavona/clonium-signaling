@@ -196,3 +196,21 @@ const PORT = process.env.PORT || 8080;
 server.listen(PORT, () => {
   console.log(`Signaling server running on port ${PORT}`);
 });
+
+const ROOM_TTL_MS = 5 * 60 * 1000; // 5 minuti
+
+setInterval(() => {
+  const now = Date.now();
+  let changed = false;
+
+  for (const [roomId, room] of rooms.entries()) {
+    if (!room.lastHeartbeat || now - room.lastHeartbeat > ROOM_TTL_MS) {
+      rooms.delete(roomId);
+      changed = true;
+    }
+  }
+
+  if (changed) {
+    broadcastRooms();
+  }
+}, 60 * 1000); // ogni minuto
